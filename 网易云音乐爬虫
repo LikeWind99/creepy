@@ -1,0 +1,58 @@
+import requests
+from selenium import webdriver
+import os
+import random
+import time
+
+head = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36'
+}
+
+ip = ['111.47.154.34', '58.19.14.56', '118.24.128.46', '220.168.52.245']
+
+
+def getHTML(url):
+    proxy = {'http': random.choice(ip)}
+    try:
+        r = requests.get(url, headers=head, timeout=30, proxies=proxy)
+        r.raise_for_status
+        r.encoding = r.apparent_encoding
+        return r.content
+    except:
+        print('网页打开异常哦,亲')
+
+
+def downloadMusic(music_id):
+    root = 'https://link.hhtjim.com/163/'
+    music_url = root + music_id + '.mp3'
+    content = getHTML(music_url)
+    music_path = path + music_id + '.mp3'
+    if not os.path.exists(path):
+        os.mkdir('网易云音乐')
+    if not os.path.exists(music_path):
+        with open(music_path, 'wb') as f:
+            f.write(content)
+    else:
+        print('亲,歌曲已经存在了哦~ovo~')
+
+
+def getMusic():
+    url = 'https://music.163.com/#/playlist?id=2409342460'  #歌单不唯一, 可以换
+    driver = webdriver.Chrome()
+    driver.get(url)
+    driver.switch_to.frame('g_iframe')
+    req = driver.find_element_by_id('m-playlist')
+    for i in range(1, 20):
+        string = './/table/tbody/tr[{}]/td[2]/div/div/div/span/a'.format(i)
+        music_id = req.find_element_by_xpath(
+            string).get_attribute('href').split('=')[-1]
+        downloadMusic(music_id)
+        print('第{}首音乐已经下载完成'.format(i))
+        time.sleep(1)
+    driver.close()
+
+
+if __name__ == "__main__":
+    # url = input("请输入要下载的歌单")  #这个地方可以把歌单放在外面
+    path = 'D:\\py\\py\\网易云音乐\\'
+    getMusic()
