@@ -1,0 +1,66 @@
+import requests
+import hashlib
+import time
+import random
+import json
+
+
+def makeMd5(string):
+    string = str(string).encode('utf-8')
+    md5 = hashlib.md5(string).hexdigest()
+    return md5
+
+
+def youdao(string):
+    e = string
+    r = str(int(time.time()*1000))
+    salt = r + str(random.randint(0, 9))
+    ts = r
+    bv = makeMd5(
+        "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.122 Safari/537.36")
+    sign = makeMd5(("fanyideskweb" + e + salt + "Nw(nmmbP%A-r6U3EUn]Aj"))
+    url = 'http://fanyi.youdao.com/translate_o?smartresult=dict&smartresult=rule'
+
+    data = {
+        'i': e,
+        'from': 'AUTO',
+        'to': 'AUTO',
+        'smartresult': 'dict',
+        'client': 'fanyideskweb',
+        'salt': salt,
+        'sign': sign,
+        'ts': ts,
+        'bv': bv,
+        'doctype': 'json',
+        'version': '2.1',
+        'keyfrom': 'fanyi.web',
+        'action': 'FY_BY_CLICKBUTTION',
+    }
+
+    headers = {
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'zh-CN,zh;q=0.9',
+        'Connection': 'keep-alive',
+        'Content-Length': '242',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Cookie': 'OUTFOX_SEARCH_USER_ID=-643435351@10.169.0.84; OUTFOX_SEARCH_USER_ID_NCOO=1392655044.9931896; DICT_UGC=be3af0da19b5c5e6aa4e17bd8d90b28a|; JSESSIONID=abcchyumZuADrdsEYblcx; ___rl__test__cookies=1582881921089',
+        'Host': 'fanyi.youdao.com',
+        'Origin': 'http://fanyi.youdao.com',
+        'Referer': 'http://fanyi.youdao.com/?keyfrom=dict2.index',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36',
+        'X-Requested-With': 'XMLHttpRequest',
+    }
+    res = requests.post(url, headers=headers, data=data)
+    result = res.json()
+    target = result['translateResult'][0][0]['tgt']
+    content = result['translateResult'][0][0]['src']
+    print('您要查找的内容是:' + target)
+    # print('您要查找的内容是:{}'.format(target))
+    print('查找的结果是:' + content)
+    # print('查找的结果是:{}'.format(content))
+
+
+if __name__ == "__main__":
+    string = input('请输入你要查找的内容 : ')
+    result = youdao(string)
