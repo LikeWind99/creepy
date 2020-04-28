@@ -1,0 +1,61 @@
+import requests
+from bs4 import BeautifulSoup
+import os
+import re
+
+url = 'http://www.dili360.com/gallery/'
+root = "D:\\py\\pic\\"
+
+
+def getHTMLText(url):
+    kv = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36'}
+    try:
+        r = requests.get(url, headers=kv, timeout=30)
+        r.raise_for_status
+        r.encoding = r.apparent_encoding
+        return r.text
+    except:
+        print("访问失败!")
+
+
+def getImag(html):
+    html_string = str(html)
+    soup = BeautifulSoup(html_string, "html.parser")
+    img = soup.findAll('div', {"class": "img"})
+    if len(img) == 0:
+        img = soup.findAll('div', {"class": "aImg"})
+    print(len(img))
+    return img
+
+
+def Save(img):
+    for img_html in img:
+        img_src = img_html.find('img')['src']
+
+        img_name = img_src.split("/")[-1].replace('@!rw9', '').replace('@!rw14', '').replace('@!rw7', '').replace('@!rw8', '').replace('@!rw10', '').replace('@!rw11', '').replace('@!rw12', '').replace('@!rw13', '').replace('@!rw6', '').replace(
+            '@!rw5', '').replace('@!rw4', '').replace('@!rw3', '').replace('@!rw2', '').replace('@!rw1', '').replace('@!rw15', '').replace('@!rw16', '').replace('@!rw17', '').replace('@!rw18', '').replace('@!rw19', '')
+        path = root + img_name
+        try:
+            if not os.path.exists(root):
+                os.mkdir(root)
+            if not os.path.exists(path):
+                r = requests.get(img_src)
+                r.raise_for_status()
+                with open(path, 'wb') as f:
+                    f.write(r.content)
+                print("文件保存成功")
+            else:
+                print("文件已经存在")
+
+        except:
+            print("爬取失败")
+
+
+def main():
+    html = getHTMLText(url)
+    img = getImag(html)
+    Save(img)
+
+
+main()
