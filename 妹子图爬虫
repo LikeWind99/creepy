@@ -1,0 +1,56 @@
+import requests
+import re
+import os
+from bs4 import BeautifulSoup
+
+url = "http://jandan.net/ooxx/MjAyMDAyMjUtMTY2#comments"
+kv = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36'}
+root = "D:pic\\"
+
+
+def getHTMLText(url, headers=kv, timeout=30):
+    try:
+        r = requests.get(url)
+        r.raise_for_status
+        r.encoding = r.apparent_encoding
+        return r.text
+    except:
+        print("出错啦!")
+
+
+def getImage(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    imag = soup.find_all('img', {'referrerpolicy': 'no-referrer'})
+    return imag
+
+
+def saveImage(img):
+    for each_img in img:
+        img_src = 'http:' + each_img['src']
+        img_name = img_src.split('/')[-1]
+        print(img_src)
+        path = root + img_name
+        print(path)
+        try:
+            if not os.path.exists(root):
+                os.mkdir(root)
+            if not os.path.exists(path):
+                r = requests.get(img_src)
+                r.raise_for_status()
+                with open(path, 'wb') as f:
+                    f.write(r.content)
+                print("文件保存成功")
+            else:
+                print("文件已经存在")
+        except:
+            print("爬取失败")
+
+
+def main():
+    html = getHTMLText(url)
+    img = getImage(html)
+    saveImage(img)
+
+
+main()
